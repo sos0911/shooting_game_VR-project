@@ -15,6 +15,8 @@ public class Revolver_fire : MonoBehaviour
     private int shootammo;
     private int leftammo;
     private float cooltime;
+    // 한발당 데미지
+    private int damage;
 
 
     public SteamVR_Action_Boolean shoot_act;
@@ -28,6 +30,7 @@ public class Revolver_fire : MonoBehaviour
     private Animator revolver_animator = null;
 
     private Interactable interactable;
+    private Rigidbody revolver_rigidbody = null;
 
     // 원래 있어야 할 총알 홀스터의 transform
     public Transform bullet_origin_transform; 
@@ -44,11 +47,13 @@ public class Revolver_fire : MonoBehaviour
         maxshootammo = weaponInfo.shootammo;
         maxleftammo = weaponInfo.leftammo;
         cooltime = weaponInfo.cooltime;
+        damage = weaponInfo.damage;
 
         shootammo = maxshootammo;
         leftammo = maxleftammo;
 
         interactable = GetComponent<Interactable>();
+        revolver_rigidbody = gameObject.GetComponent<Rigidbody>();
 
         revolver_animator.SetBool("doing_fire", false);
     }
@@ -77,7 +82,7 @@ public class Revolver_fire : MonoBehaviour
                
                 if (hitinfo.collider.gameObject.tag.Contains("Enemy"))
                 {
-                    // 나중에 체력을 깎든지 해서 구현..
+                    // enemy 클래스는 만들 예정.
                     Destroy(hitinfo.collider.gameObject);
                 }
             }
@@ -142,14 +147,24 @@ public class Revolver_fire : MonoBehaviour
     }
 
     // 물체를 들었을 때 호출됨.
+    // Main scene에서 홀스터에 차면 kinematic과 gravity 체크 변경되므로 다시 해줄 것.
 
     private void OnAttachedToHand(Hand hand)
     {
         PlayerController.Instance.state = PlayerController.playerState.grapweapon;
+        revolver_rigidbody.isKinematic = false;
+        revolver_rigidbody.useGravity = true;
+
     }
 
     private void OnDetachedFromHand(Hand hand)
     {
+        Debug.Log("OnDetachedFromHand revolver");
+        if (PlayerController.Instance.weapon_should_locked)
+        {
+            gameObject.transform.parent.GetComponentInChildren<weapon_receptor>().fix_weapon();
+            PlayerController.Instance.weapon_should_locked = false;
+        }
         PlayerController.Instance.state = PlayerController.playerState.idle;
     }
     //private void OnHandHoverBegin(Hand hand)
