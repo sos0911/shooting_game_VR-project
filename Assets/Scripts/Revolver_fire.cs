@@ -73,17 +73,20 @@ public class Revolver_fire : MonoBehaviour
             // 8번째 layer만 빼고 모두 check
             layerMask = ~layerMask;
 
+            Debug.Log("gunfire_smoke played!");
             gunfire_smoke.Play();
 
             // 무언가 총알에 맞음!
             if (Physics.Raycast(shootpoint.position, shootpoint.forward, out hitinfo, Mathf.Infinity, layerMask))
             {
                 Debug.DrawRay(shootpoint.position, shootpoint.forward * hitinfo.distance, Color.yellow);
+
+                Debug.Log("hit ! " + hitinfo.collider.gameObject.tag);
                
-                if (hitinfo.collider.gameObject.tag.Contains("Enemy"))
+                if (hitinfo.collider.gameObject.tag == "Enemy")
                 {
                     // enemy 클래스는 만들 예정.
-                    Destroy(hitinfo.collider.gameObject);
+                    hitinfo.transform.GetComponent<EnemyController>().hit(damage, hitinfo.point);
                 }
             }
 
@@ -154,17 +157,16 @@ public class Revolver_fire : MonoBehaviour
         PlayerController.Instance.state = PlayerController.playerState.grapweapon;
         revolver_rigidbody.isKinematic = false;
         revolver_rigidbody.useGravity = true;
+        PlayerController.Instance.weapon_should_locked = false;
 
     }
 
     private void OnDetachedFromHand(Hand hand)
     {
-        Debug.Log("OnDetachedFromHand revolver");
-        if (PlayerController.Instance.weapon_should_locked)
-        {
-            gameObject.transform.parent.GetComponentInChildren<weapon_receptor>().fix_weapon();
-            PlayerController.Instance.weapon_should_locked = false;
-        }
+        // 무조건 놓치면 홀스터로 가게끔 한다.
+        gameObject.transform.parent.GetComponentInChildren<weapon_receptor>().fix_weapon();
+        PlayerController.Instance.weapon_should_locked = false;
+
         PlayerController.Instance.state = PlayerController.playerState.idle;
     }
     //private void OnHandHoverBegin(Hand hand)

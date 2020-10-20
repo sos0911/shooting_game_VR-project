@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
+using Valve.VR.InteractionSystem.Sample;
 
 public class PlayerController : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class PlayerController : MonoBehaviour
     public int maxhp = 100;
     public int hp;
     private CharacterController charactercontroller;
+
+    public ParticleSystem hiteffect;
+
 
     public bool Isbulletloaded = false; // 한번에 많이 장전하는 것을 막는다.
     public bool weapon_should_locked = false; // detach할 때 홀스터에 수납해라!
@@ -81,6 +85,13 @@ public class PlayerController : MonoBehaviour
             else
                 PlayerController.Instance.state = PlayerController.playerState.lookforweapon;
         }
+    }
+
+    public void hit(int damage, Vector3 hitpoint)
+    {
+        hp -= damage;
+        hiteffect.transform.position = hitpoint;
+        hiteffect.Play();
     }
 
     // Update is called once per frame
